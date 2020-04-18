@@ -1,0 +1,7 @@
+.terraform
+/main.tf
+/variables.tf
+*zip
+*tar.gz
+*terraform.tfstate*
+*tfvars
