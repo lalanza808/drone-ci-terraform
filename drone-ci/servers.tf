@@ -123,6 +123,8 @@ module "servers_asg" {
     DRONE_USER_FILTER = var.github_admin_user
     DRONE_USER_CREATE = "username:${var.github_admin_user},admin:true"
     ADMIN_EMAIL = var.admin_email
+    BACKUP_BUCKET = aws_s3_bucket.server_backups.id
+    CRON_EXPRESSION = var.server_backup_cron
   })
   tags_as_map = {
     "Name"      = "${var.name}-servers"

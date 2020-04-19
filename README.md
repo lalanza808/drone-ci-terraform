@@ -8,7 +8,7 @@ This is still a work in progress and very much in a prototype phase.
 
 * ~~Clean up repo (still WIP code, secrets, etc)~~
 * ~~ALB access logs to S3~~
-* Persistent Drone Server DB (backup and restore)
+* ~~Persistent Drone Server DB (backup and restore)~~
 * Tightened security
 * Multiple git platform options (and not just Github)
 * Restricted bucket policies

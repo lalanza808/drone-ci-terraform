@@ -109,3 +109,31 @@ docker run \
   --detach=true \
   --name=drone \
   drone/drone:1
+
+
+# Setup DB backups
+cat << EOF > /opt/backup_server.sh
+YEAR=\$(date +%Y)
+MONTH=\$(date +%m)
+DAY=\$(date +%d)
+HOUR=\$(date +%H)
+MINUTE=\$(date +%M)
+DATESTRING=\$YEAR-\$MONTH-\$DAY-\$HOUR-\$MINUTE
+DST=/opt/backup-\$DATESTRING.tar.gz
+tar czvf \$DST /var/lib/drone
+aws s3 cp \$DST s3://${BACKUP_BUCKET}/\$YEAR/\$MONTH/\$DATESTRING.tar.gz
+aws s3 mv \$DST s3://${BACKUP_BUCKET}/latest.tar.gz
+EOF
+chmod +x /opt/backup_server.sh
+cat << EOF > /etc/cron.d/backup_server
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+
+${CRON_EXPRESSION} root /opt/backup_server.sh
+EOF
+
+# Restore initial DB
+aws s3 cp s3://${BACKUP_BUCKET}/latest.tar.gz /tmp/latest.tar.gz
+docker stop drone
+tar xzvf /tmp/latest.tar.gz
+rsync -avzP --delete --progress ./var/lib/drone/ /var/lib/drone/
+docker start drone

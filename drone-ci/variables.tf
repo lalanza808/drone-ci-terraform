@@ -32,6 +32,10 @@ variable "github_admin_user" {
 variable "admin_email" {
   description = "Email address to use for Lets Encrypt certs"
 }
+variable "server_backup_cron" {
+  default = "0 */12 * * *"
+  description = "The cronjob expression to represent your backup schedule"
+}
 
 # Network
 variable "vpc_id" {
