@@ -18,14 +18,15 @@ apt-get install docker-ce docker-ce-cli containerd.io docker-compose -y
 systemctl enable docker
 systemctl start docker
 
-docker run -d \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -e DRONE_RPC_PROTO=${DRONE_RPC_PROTO} \
-  -e DRONE_RPC_HOST=${DRONE_RPC_HOST} \
-  -e DRONE_RPC_SECRET=${DRONE_RPC_SECRET} \
-  -e DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY} \
-  -e DRONE_RUNNER_NAME=${DRONE_RUNNER_NAME} \
-  -p 3000:3000 \
-  --restart always \
-  --name runner \
+docker run \
+  --detach=true \
+  --volume=/var/run/docker.sock:/var/run/docker.sock \
+  --env=DRONE_RPC_PROTO=${DRONE_RPC_PROTO} \
+  --env=DRONE_RPC_HOST=${DRONE_RPC_HOST} \
+  --env=DRONE_RPC_SECRET=${DRONE_RPC_SECRET} \
+  --env=DRONE_RUNNER_CAPACITY=${DRONE_RUNNER_CAPACITY} \
+  --env=DRONE_RUNNER_NAME=${DRONE_RUNNER_NAME} \
+  --publish=3000:3000 \
+  --restart=always \
+  --name=runner \
   drone/drone-runner-docker:1
