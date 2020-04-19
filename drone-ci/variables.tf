@@ -26,10 +26,6 @@ variable "max_runner_nodes" {
 variable "des_runner_nodes" {
   default = "1"
 }
-variable "internal" {
-  default = false
-  description = "Whether or not the ALB for servers is private or public"
-}
 variable "github_admin_user" {
   description = "The primary admin user to create on the Drone CI server"
 }
@@ -52,6 +48,14 @@ variable "private_subnets" {
 variable "allowed_ips" {
   type = list
   default = ["0.0.0.0/0"]
+}
+variable "internal" {
+  default = false
+  description = "Whether or not the ALB for servers should be private or public"
+}
+variable "force_destroy_bucket" {
+  default = true
+  description = "Whether or not to forcibly delete all data in the bucket and delete it"
 }
 
 # Secrets

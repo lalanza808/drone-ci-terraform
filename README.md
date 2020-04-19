@@ -6,8 +6,8 @@ This is still a work in progress and very much in a prototype phase.
 
 ## TODO
 
-* Clean up templates (still WIP code)
-* ALB access logs to S3
+* ~~Clean up repo (still WIP code, secrets, etc)~~
+* ~~ALB access logs to S3~~
 * Persistent Drone Server DB (backup and restore)
 * Tightened security
 * Multiple git platform options (and not just Github)
@@ -19,6 +19,10 @@ This is still a work in progress and very much in a prototype phase.
 * Validate runners
 * Programmatic runner scaling
 * Lifecycle hooks for better automation
+
+Far out ideas I have:
+
+* Move everything into private subnets and front access with Wireguard access server
 
 ### Environment Variables and Secrets
 

@@ -40,15 +40,13 @@ resource "aws_lb" "servers" {
 
   enable_deletion_protection = false
 
-  # access_logs {
-  #   bucket  = "${aws_s3_bucket.lb_logs.bucket}"
-  #   prefix  = "test-lb"
-  #   enabled = true
-  # }
-
-  tags = {
-    Environment = "production"
+  access_logs {
+    bucket  = aws_s3_bucket.server_alb_logs.id
+    prefix  = "logs"
+    enabled = true
   }
+
+  tags = local.tags
 }
 
 resource "aws_lb_target_group" "servers_80" {
