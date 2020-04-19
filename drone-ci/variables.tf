@@ -5,6 +5,9 @@ variable "name" {
 variable "subdomain" {
   description = "Subdomain to use for endpoint on the existing domain"
 }
+variable "vpn_subdomain" {
+  default = "vpn"
+}
 variable "domain_name" {
   description = "Route53 zone name where DNS records should be provisioned"
 }
@@ -15,7 +18,10 @@ variable "runner_instance_type" {
   description = "EC2 instance type to use for Drone CI Runners"
 }
 variable "server_instance_type" {
-  description = "EC2 instance type to use for Drone CI Servers"
+  description = "EC2 instance type to use for Drone CI server"
+}
+variable "vpn_instance_type" {
+  description = "EC2 instance type to use for Wireguard VPN server"
 }
 variable "min_runner_nodes" {
   default = "1"
@@ -33,8 +39,12 @@ variable "admin_email" {
   description = "Email address to use for Lets Encrypt certs"
 }
 variable "server_backup_cron" {
-  default = "0 */12 * * *"
+  default     = "0 */12 * * *"
   description = "The cronjob expression to represent your backup schedule"
+}
+variable "force_destroy_bucket" {
+  default     = true
+  description = "Whether or not to forcibly delete all data in the bucket and delete it"
 }
 
 # Network
@@ -49,17 +59,20 @@ variable "private_subnets" {
   type        = list
   description = "List of subnets where runner instances will be deployed to"
 }
-variable "allowed_ips" {
-  type = list
+variable "allowed_mgmt_ips" {
+  type    = list
+  default = []
+}
+variable "allowed_vpn_ips" {
+  type    = list
   default = ["0.0.0.0/0"]
 }
 variable "internal" {
-  default = false
+  default     = false
   description = "Whether or not the ALB for servers should be private or public"
 }
-variable "force_destroy_bucket" {
-  default = true
-  description = "Whether or not to forcibly delete all data in the bucket and delete it"
+variable "vpn_upstream_dns" {
+  default = "4.2.2.1"
 }
 
 # Secrets
@@ -70,3 +83,5 @@ variable "DRONE_RPC_PROTO" {}
 variable "DRONE_SERVER_PROTO" {}
 variable "DRONE_RUNNER_CAPACITY" {}
 variable "DRONE_RUNNER_NAME" {}
+variable "VPN_ADMIN_USER" {}
+variable "VPN_ADMIN_PASSWORD" {}

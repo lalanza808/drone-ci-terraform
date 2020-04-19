@@ -62,11 +62,11 @@ module "runners_asg" {
   key_name                  = var.key_name
 
   user_data = templatefile("${path.module}/files/runner_user_data.sh", {
-    DRONE_RPC_PROTO = var.DRONE_RPC_PROTO
-    DRONE_RPC_HOST = "${var.subdomain}.${var.domain_name}"
-    DRONE_RPC_SECRET = var.DRONE_RPC_SECRET
+    DRONE_RPC_PROTO       = var.DRONE_RPC_PROTO
+    DRONE_RPC_HOST        = "${var.subdomain}.${var.domain_name}"
+    DRONE_RPC_SECRET      = var.DRONE_RPC_SECRET
     DRONE_RUNNER_CAPACITY = var.DRONE_RUNNER_CAPACITY
-    DRONE_RUNNER_NAME = var.DRONE_RUNNER_NAME
+    DRONE_RUNNER_NAME     = var.DRONE_RUNNER_NAME
   })
   tags_as_map = {
     "Name"      = "${var.name}-runners"

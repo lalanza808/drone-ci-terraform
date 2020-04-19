@@ -4,23 +4,31 @@ resource "aws_security_group" "servers" {
   vpc_id      = var.vpc_id
 }
 
+resource "aws_security_group_rule" "servers_inbound_22" {
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.vpn.id
+  security_group_id        = aws_security_group.servers.id
+}
 
 resource "aws_security_group_rule" "servers_inbound_80" {
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  source_security_group_id = aws_security_group.servers_alb.id
-  security_group_id = aws_security_group.servers.id
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.vpn.id
+  security_group_id        = aws_security_group.servers.id
 }
 
 resource "aws_security_group_rule" "servers_inbound_443" {
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  source_security_group_id = aws_security_group.servers_alb.id
-  security_group_id = aws_security_group.servers.id
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.vpn.id
+  security_group_id        = aws_security_group.servers.id
 }
 
 resource "aws_security_group_rule" "servers_egress" {
@@ -45,7 +53,7 @@ data "aws_iam_policy_document" "servers_assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "server_dns" {
+data "aws_iam_policy_document" "server_iam" {
   statement {
     actions = [
       "route53:ListHostedZones",
@@ -53,6 +61,14 @@ data "aws_iam_policy_document" "server_dns" {
     ]
     resources = [
       "*"
+    ]
+  }
+  statement {
+    actions = [
+      "s3:Put*"
+    ]
+    resources = [
+      "${aws_s3_bucket.server_backups.arn}/*"
     ]
   }
   statement {
@@ -65,15 +81,15 @@ data "aws_iam_policy_document" "server_dns" {
   }
 }
 
-resource "aws_iam_policy" "server_dns" {
+resource "aws_iam_policy" "server_iam" {
   name_prefix = aws_iam_role.servers.name
   description = "Drone CI server programmatic access to manage resources"
-  policy      = data.aws_iam_policy_document.server_dns.json
+  policy      = data.aws_iam_policy_document.server_iam.json
 }
 
-resource "aws_iam_role_policy_attachment" "server_dns" {
+resource "aws_iam_role_policy_attachment" "server_iam" {
   role       = aws_iam_role.servers.name
-  policy_arn = aws_iam_policy.server_dns.arn
+  policy_arn = aws_iam_policy.server_iam.arn
 }
 
 resource "aws_iam_role" "servers" {
@@ -109,22 +125,22 @@ module "servers_asg" {
   wait_for_capacity_timeout = 0
   default_cooldown          = 120
   health_check_grace_period = 120
-  target_group_arns         = [aws_lb_target_group.servers_80.id, aws_lb_target_group.servers_443.id]
   key_name                  = var.key_name
 
 
   user_data = templatefile("${path.module}/files/server_user_data.sh", {
-    DRONE_GITHUB_CLIENT_ID = var.DRONE_GITHUB_CLIENT_ID
+    DRONE_GITHUB_CLIENT_ID     = var.DRONE_GITHUB_CLIENT_ID
     DRONE_GITHUB_CLIENT_SECRET = var.DRONE_GITHUB_CLIENT_SECRET
-    DRONE_RPC_SECRET = var.DRONE_RPC_SECRET
-    DRONE_SERVER_HOST = "${var.subdomain}.${var.domain_name}"
-    DRONE_SERVER_PROTO = var.DRONE_SERVER_PROTO
-    DRONE_S3_BUCKET = aws_s3_bucket.server_logs.id
-    DRONE_USER_FILTER = var.github_admin_user
-    DRONE_USER_CREATE = "username:${var.github_admin_user},admin:true"
-    ADMIN_EMAIL = var.admin_email
-    BACKUP_BUCKET = aws_s3_bucket.server_backups.id
-    CRON_EXPRESSION = var.server_backup_cron
+    DRONE_RPC_SECRET           = var.DRONE_RPC_SECRET
+    DRONE_SERVER_HOST          = "${var.subdomain}.${var.domain_name}"
+    DRONE_SERVER_PROTO         = var.DRONE_SERVER_PROTO
+    DRONE_S3_BUCKET            = aws_s3_bucket.server_logs.id
+    DRONE_USER_FILTER          = var.github_admin_user
+    DRONE_USER_CREATE          = "username:${var.github_admin_user},admin:true"
+    ADMIN_EMAIL                = var.admin_email
+    BACKUP_BUCKET              = aws_s3_bucket.server_backups.id
+    CRON_EXPRESSION            = var.server_backup_cron
+    ZONE_ID                    = data.aws_route53_zone.domain.zone_id
   })
   tags_as_map = {
     "Name"      = "${var.name}-servers"

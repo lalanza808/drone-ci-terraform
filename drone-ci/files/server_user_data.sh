@@ -79,6 +79,33 @@ EOF
 systemctl enable nginx
 systemctl restart nginx
 
+# Install awscli
+apt-get install awscli -y
+
+# Update DNS for individual node
+PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+cat << EOF > update-${DRONE_SERVER_HOST}.json
+{
+    "Comment": "Update record to reflect new IP address of Drone CI Server",
+    "Changes": [
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "${DRONE_SERVER_HOST}.",
+                "Type": "A",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "$PRIVATE_IP"
+                    }
+                ]
+            }
+        }
+    ]
+}
+EOF
+aws route53 change-resource-record-sets --hosted-zone-id ${ZONE_ID} --change-batch file://update-${DRONE_SERVER_HOST}.json
+
 # Docker install
 apt-get remove docker docker-engine docker.io containerd runc -y
 apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
